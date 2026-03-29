@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link ,useNavigate} from "react-router-dom";
+import { useAuth } from "../hook/useAuth";
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const { handleLogin } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -15,10 +18,24 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log("Login payload:", formData);
-  };
+ const [error, setError] = useState("");
+
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  setError("");
+
+  try {
+    const payload = {
+      email: formData.email,
+      password: formData.password,
+    };
+
+    await handleLogin(payload);
+    navigate("/");
+  } catch (err) {
+    setError(err.message || "Login failed");
+  }
+};
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-8 sm:px-6 lg:px-8">
@@ -90,6 +107,7 @@ const Login = () => {
                 placeholder="Enter your password"
                 className="w-full rounded-xl border border-[#2b3555] bg-[#0a1020] px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30"
               />
+              {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             </div>
 
             <button

@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";        // ✅ Redux se padhne ke liye
+import { useAuth } from "../hook/useAuth";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -8,18 +10,28 @@ const Register = () => {
     password: "",
   });
 
+  const navigate = useNavigate();
+  const { handleRegister } = useAuth();            // ✅ destructure kiya
+
+  // ✅ Redux store se lo — local state hata diya
+  const { loading, error } = useSelector((state) => state.auth);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
-    console.log("Input change:", name, value);
     setFormData((previous) => ({
       ...previous,
       [name]: value,
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("Register payload:", formData);
+    try {
+      await handleRegister(formData);  // error/loading sab useAuth handle karega
+      navigate("/login");
+    } catch (error) {
+      // error Redux mein already set ho gaya — yahan kuch nahi karna
+    }
   };
 
   return (
@@ -28,7 +40,17 @@ const Register = () => {
       <div className="pointer-events-none absolute -right-20 top-12 h-64 w-64 rounded-full bg-purple-500/20 blur-3xl" />
 
       <section className="relative grid w-full max-w-5xl overflow-hidden rounded-3xl border border-[#262f4a] bg-[#0f1424]/80 shadow-2xl shadow-black/30 backdrop-blur lg:grid-cols-2">
+
+        {/* ── Form Side ── */}
         <div className="order-2 bg-linear-to-br from-white/5 to-transparent p-6 sm:p-10 lg:order-1">
+
+          {/* ✅ Redux error UI */}
+          {error && (
+            <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             <div>
               <label
@@ -87,11 +109,13 @@ const Register = () => {
               />
             </div>
 
+            {/* ✅ Redux loading button pe */}
             <button
               type="submit"
-              className="w-full rounded-xl bg-linear-to-r from-cyan-500 to-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f1424]"
+              disabled={loading}
+              className="w-full rounded-xl bg-linear-to-r from-cyan-500 to-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f1424] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
 
             <p className="text-center text-sm text-[#9ca7c7]">
@@ -106,6 +130,7 @@ const Register = () => {
           </form>
         </div>
 
+        {/* ── Info Side ── */}
         <div className="order-1 flex flex-col justify-between p-6 sm:p-10 lg:order-2">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#9ca7c7]">

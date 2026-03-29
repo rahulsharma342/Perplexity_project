@@ -8,20 +8,26 @@ const authSlice = createSlice({
         error: null,
     },
     reducers: {
-        loginStart(state) {
-            state.loading = true;
-            state.error = null;
-        },
-        loginSuccess(state, action) {
-            state.loading = false;
+        setUser: (state, action) => {
             state.user = action.payload;
-        },
-        loginFailure(state, action) {
             state.loading = false;
-            state.error = action.payload;
+            state.error = null;        // ✅ success pe error clear
         },
-        logout(state) {
+        setLoading: (state, action) => {
+            state.loading = action.payload;  // ✅ true ya false dono
+        },
+        setError: (state, action) => {
+            state.error = action.payload;
+            state.loading = false;
+        },
+        logoutUser: (state) => {
             state.user = null;
+            state.loading = false;
+            state.error = null;        // ✅ logout pe sab reset
         },
     },
 });
+
+export const { setUser, setLoading, setError, logoutUser } = authSlice.actions;
+
+export default authSlice.reducer;
