@@ -13,6 +13,7 @@ const App = () => {
       fetchCurrentUser();
     }
   }, []);
+
   return <RouterProvider router={router} />;
 };
 

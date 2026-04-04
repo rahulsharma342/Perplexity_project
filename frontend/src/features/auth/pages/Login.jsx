@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { Link ,useNavigate} from "react-router-dom";
 import { useAuth } from "../hook/useAuth";
-
+import { useSelector } from "react-redux";
+import { Navigate } from "react-router-dom";
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const user = useSelector((state) => state.auth.user);
+  const loading = useSelector((state) => state.auth.loading);
   const { handleLogin } = useAuth();
   const navigate = useNavigate();
 
@@ -36,6 +39,10 @@ const handleSubmit = async (event) => {
     setError(err.message || "Login failed");
   }
 };
+
+  if(!loading && user) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-8 sm:px-6 lg:px-8">

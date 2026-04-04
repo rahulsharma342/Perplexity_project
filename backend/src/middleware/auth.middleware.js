@@ -8,7 +8,11 @@ export const authMiddleware = (req, res, next) => {
     }
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
+        const userId = decoded.id || decoded._id;
+        req.user = {
+            ...decoded,
+            _id: userId,
+        };
         next();
     } catch (error) {
         console.error("Error in authMiddleware:", error);
