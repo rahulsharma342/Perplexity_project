@@ -2,7 +2,6 @@ import { generateResponse, generateChatTitle } from "../services/ai.service.js";
 import chatModel from "../model/chat.model.js";
 import messageModel from "../model/message.model.js";
 
-
 export async function sendMessage(req, res) {
   try {
     const { message, chatId } = req.body;
@@ -40,10 +39,17 @@ export async function sendMessage(req, res) {
       content: aiResponse,
     });
 
+    const updatedMessages = await messageModel
+      .find({
+        chatId: chatId || chat._id,
+      })
+      .sort({ createdAt: 1 });
+
     res.status(200).json({
       title,
       chat,
       aiMessage,
+      messages: updatedMessages,
     });
   } catch (error) {
     console.error("Error in sendMessage:", error);
@@ -57,10 +63,10 @@ export async function getChats(req, res) {
     const chats = await chatModel
       .find({ user: user._id })
       .sort({ createdAt: -1 });
-    res.status(200).json(chats);
+    res.status(200).json({ chats });
   } catch (error) {
     console.error("Error in getChats:", error);
-    res.status(500).json({ message: "chat received successfully" }, chats);
+    res.status(500).json({ message: "Failed to retrieve chats" });
   }
 }
 
@@ -72,7 +78,7 @@ export async function getMessages(req, res) {
       return res.status(404).json({ message: "Chat not found" });
     }
     const messages = await messageModel.find({ chatId }).sort({ createdAt: 1 });
-    res.status(200).json(messages);
+    res.status(200).json({ messages });
   } catch (error) {
     console.error("Error in getMessages:", error);
     res.status(500).json({ message: "Failed to retrieve messages" });
@@ -82,7 +88,10 @@ export async function getMessages(req, res) {
 export async function deleteChat(req, res) {
   try {
     const { chatId } = req.params;
-    const chat = await chatModel.findOneAndDelete({ _id: chatId, user: req.user._id });
+    const chat = await chatModel.findOneAndDelete({
+      _id: chatId,
+      user: req.user._id,
+    });
     if (!chat) {
       return res.status(404).json({ message: "Chat not found" });
     }
